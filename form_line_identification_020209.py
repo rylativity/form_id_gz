@@ -9,20 +9,48 @@ THIS CODE TESTED ON FORM I-9 02/02/09
 from wand.image import Image
 from wand.color import Color
 import numpy as np
-import pandas as pd
 import io
 import PIL
 import pytesseract
 import re
 import more_itertools as mit
+import matplotlib.pyplot as plt
 
+"""
+for console use
+
+fig,ax = plt.subplots(figsize = (20,20))
+plt.imshow(test_data)
+plt.grid(b=True, which='major', color = "b")
+plt.grid(b=True, which='minor', color = "r")
+plt.yscale("linear")
+
+def vertical_converter(start_row, end_row):
+    start_coefficient = (start_row - 678)/119
+    end_coefficient = (end_row - 678)/119
+    print(f"Start: address_top_line+int(vertical_standard_scaler*{start_coefficient:.5f})")
+    print(f"End: address_top_line+int(vertical_standard_scaler*{end_coefficient:.5f})")
+
+def horizontal_converter(start_col, end_col):
+    start_coef = (start_col - 1215)/541
+    end_coef = (end_col - 1215)/541
+    print(f"Start: middle_sect1_line+int(horizontal_standard_scaler*{start_coef:.5f})")
+    print(f"End: middle_sect1_line+int(horizontal_standard_scaler*{end_coef:.5f})")
+    
+def pyt_converter(start_row, end_row, start_col, end_col):
+    start_coefficient = (start_row - 678)/119
+    end_coefficient = (end_row - 678)/119
+    start_coef = (start_col - 1215)/541
+    end_coef = (end_col - 1215)/541
+    print(f"pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*{start_coefficient:.5f}):address_top_line+int(vertical_standard_scaler*{end_coefficient:.5f}),middle_sect1_line+int(horizontal_standard_scaler*{start_coef:.5f}):middle_sect1_line+int(horizontal_standard_scaler*{end_coef:.5f})])")
+"""
 
 images = []
     
 #loop through PDF files and convert them to PNG
-with Image(filename="C:\\Users\\Ryan Stewart\\Desktop\\repos\\PDF-Data-Extraction\\I9_filled\\i-9_02-02-09(Filled).pdf", resolution = 300) as img:
+with Image(filename="C:\\Users\\Ryan Stewart\\Desktop\\repos\\data\\i-9_02-02-09(Filled).pdf", resolution = 300) as img:
     #find the filename
-    filename = "C:\\Users\\Ryan Stewart\\Desktop\\repos\\PDF-Data-Extraction\\I9_filled\\i-9_02-02-09(Filled).pdf"
+    filename = "C:\\Users\\Ryan Stewart\\Desktop\\repos\\i-9_02-02-09(Filled).pdf"
     
     #loop through pages of PDF
     for i, page in enumerate(img.sequence):
@@ -76,16 +104,12 @@ def process_I9_02_02_09(page):
     
     
     #Identify horizontal dark rows and use them to create horizontal scaler for distance
-    dark_rows = [i for i,x in enumerate(test_data) if sum(x) <400] ### 
+    dark_rows = [i for i,x in enumerate(page1) if sum(x) <400] ### 
     row_groups = [tuple(group) for group in mit.consecutive_groups(dark_rows)]
     rows = [np.max(group) for group in row_groups]
     name_top_line, address_top_line = rows[3], rows[4]
     vertical_standard_scaler = address_top_line - name_top_line
-    
-    #group line rows together that represent single lines and identify the bottoms of the lines to orient OCR
-    line_groups = [tuple(group) for group in mit.consecutive_groups(line_rows2[0])]
-    line_bottoms = [np.max(group) for group in line_groups]
-    print(line_bottoms)
+
 
     #can use this value to define distance. Won't depend on scale of scanned document
     vertical_standard_scaler = address_top_line - name_top_line
@@ -101,6 +125,7 @@ def process_I9_02_02_09(page):
     
     
     ### Data extraction
+    # Section 1
     # pull name, address, dob, ss, and contact out by using pytess. to convert image to string and use RE to separate
     name = re.findall("\\n([a-zA-Z0-9_ ]+)", pytesseract.image_to_string(page1[name_top_line:address_top_line]))[0]
     last, first, mid = name.split()[0], name.split()[1], name.split()[2]
@@ -120,6 +145,8 @@ def process_I9_02_02_09(page):
     ss = re.findall("\\n([a-zA-Z0-9_ ]+)", pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*1.0084):address_top_line+int(vertical_standard_scaler*1.94958),middle_sect1_line+int(horizontal_standard_scaler*0.05):middle_sect1_line+int(horizontal_standard_scaler*2.18854)]))[0]
     
     info_dict = {"first":first,"last":last,"MI":mid,"street":street,"city":city,"state":state,"zip":zip_code,"DOB":dob, "SS":ss}
+    if maiden:
+        info_dict["maiden"] = maiden
     
     
     ### Reviewing the Check Boxes
@@ -165,59 +192,34 @@ def process_I9_02_02_09(page):
             info_dict["work authorization"] = "No Box Checked"
     
     info_dict["date signed"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*4.78151):address_top_line+int(vertical_standard_scaler*5.44538),middle_sect1_line+int(horizontal_standard_scaler*0.67652):middle_sect1_line+int(horizontal_standard_scaler*1.35675)])
+    
+    #Section 2
+    
+    info_dict["List A Document"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*9.86555):address_top_line+int(vertical_standard_scaler*10.51261),middle_sect1_line+int(horizontal_standard_scaler*-1.53235):middle_sect1_line+int(horizontal_standard_scaler*-0.61553)])
+    info_dict["List B Document"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*9.86555):address_top_line+int(vertical_standard_scaler*10.51261),middle_sect1_line+int(horizontal_standard_scaler*-0.40481):middle_sect1_line+int(horizontal_standard_scaler*0.67652)])
+    info_dict["List C Document"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*9.86555):address_top_line+int(vertical_standard_scaler*10.51261),middle_sect1_line+int(horizontal_standard_scaler*1.10351):middle_sect1_line+int(horizontal_standard_scaler*2.18299)])
+     
+    info_dict["Iss. Authority (A)"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*10.57143):address_top_line+int(vertical_standard_scaler*11.06723),middle_sect1_line+int(horizontal_standard_scaler*-1.47689):middle_sect1_line+int(horizontal_standard_scaler*-0.61738)])
+    info_dict["Iss. Authority (B)"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*10.57143):address_top_line+int(vertical_standard_scaler*11.06723),middle_sect1_line+int(horizontal_standard_scaler*-0.39926):middle_sect1_line+int(horizontal_standard_scaler*0.68207)])
+    info_dict["Iss. Authority (C)"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*10.57143):address_top_line+int(vertical_standard_scaler*11.06723),middle_sect1_line+int(horizontal_standard_scaler*1.10721):middle_sect1_line+int(horizontal_standard_scaler*2.18854)])
+     
+    info_dict["Doc. # (A)"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*11.11765):address_top_line+int(vertical_standard_scaler*11.59664),middle_sect1_line+int(horizontal_standard_scaler*-1.59519):middle_sect1_line+int(horizontal_standard_scaler*-0.61738)])
+    info_dict["Doc. # (B)"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*11.11765):address_top_line+int(vertical_standard_scaler*11.59664),middle_sect1_line+int(horizontal_standard_scaler*-0.39926):middle_sect1_line+int(horizontal_standard_scaler*0.68207)])
+    info_dict["Doc. # (C)"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*11.11765):address_top_line+int(vertical_standard_scaler*11.59664),middle_sect1_line+int(horizontal_standard_scaler*1.10721):middle_sect1_line+int(horizontal_standard_scaler*2.18854)])
+    
+    info_dict["Doc. Expir. (A)"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*11.64706):address_top_line+int(vertical_standard_scaler*12.13445),middle_sect1_line+int(horizontal_standard_scaler*-1.15896):middle_sect1_line+int(horizontal_standard_scaler*-0.61553)])
+    info_dict["Doc. Expir. (B)"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*11.64706):address_top_line+int(vertical_standard_scaler*12.13445),middle_sect1_line+int(horizontal_standard_scaler*-0.39926):middle_sect1_line+int(horizontal_standard_scaler*0.68207)])
+    info_dict["Doc. Expir. (C)"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*11.64706):address_top_line+int(vertical_standard_scaler*12.13445),middle_sect1_line+int(horizontal_standard_scaler*1.10721):middle_sect1_line+int(horizontal_standard_scaler*2.18854)])
+    
+    info_dict["Employ. Start Date"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*13.94958):address_top_line+int(vertical_standard_scaler*14.41176),middle_sect1_line+int(horizontal_standard_scaler*-1.47505):middle_sect1_line+int(horizontal_standard_scaler*-0.96488)])
+    info_dict["Verifier Name"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*15.15126):address_top_line+int(vertical_standard_scaler*15.81513),middle_sect1_line+int(horizontal_standard_scaler*-0.38632):middle_sect1_line+int(horizontal_standard_scaler*1.03882)])
+    info_dict["Verifier Title"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*15.15126):address_top_line+int(vertical_standard_scaler*16.57143),middle_sect1_line+int(horizontal_standard_scaler*1.04806):middle_sect1_line+int(horizontal_standard_scaler*2.17745)])
+    info_dict["Business Name/Addr."] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*16.10084):address_top_line+int(vertical_standard_scaler*16.68067),middle_sect1_line+int(horizontal_standard_scaler*-1.96858):middle_sect1_line+int(horizontal_standard_scaler*1.03882)])
+    
+    #Section 3
+    info_dict["Date Rehired"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*17.52941):address_top_line+int(vertical_standard_scaler*18.04202),middle_sect1_line+int(horizontal_standard_scaler*0.64325):middle_sect1_line+int(horizontal_standard_scaler*2.48614)])
+    info_dict["Reverif. Doc. Type"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*18.45378):address_top_line+int(vertical_standard_scaler*19.00840),middle_sect1_line+int(horizontal_standard_scaler*0.27542):middle_sect1_line+int(horizontal_standard_scaler*0.94085)])
+    info_dict["Reverif. Doc. Num."] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*18.45378):address_top_line+int(vertical_standard_scaler*19.00840),middle_sect1_line+int(horizontal_standard_scaler*0.27542):middle_sect1_line+int(horizontal_standard_scaler*0.94085)])
+    info_dict["Reverif. Doc. Exp."] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*18.45378):address_top_line+int(vertical_standard_scaler*19.00000),middle_sect1_line+int(horizontal_standard_scaler*1.63031):middle_sect1_line+int(horizontal_standard_scaler*2.19224)])
+    
     return info_dict
-"""
-#### Page 2
-    page2 = pages[1]
-    
-        #enhance data
-    page2 = enhance(np.array(PIL.Image.open(page2)))
-        
-    #get height and width
-    height, width = page2.shape
-    bottom = int(height)
-    
-    
-    ### New Kernel Array for data2 to identify thinner horizontal form lines###
-    line_width3 = int(height * .0005)
-    kernel_height3 = bottom - line_width3
-    kernel_width3 = width - line_width3
-    
-    #create kernel array to find density of image to find the thinner lines around form boxes
-    kernel_array3 = np.full((kernel_height3, kernel_width3), 1).astype('float64')
-    for i in range(kernel_height3):
-        for j in range(kernel_width3):
-            density3 = np.mean(page2[i:i+line_width3, j:j+line_width3])
-            #print((i,j), "density:", density)
-            kernel_array3[i,j] = density3
-    
-    #convert all values to 1 (light) that are more than 0.03 above the minimum
-    kernel_array3[kernel_array3 > np.min(kernel_array3) + 0.03] = 1
-    
-    #find rows that contain thin form lines
-    row_sums3 = kernel_array3.sum(axis = 1)
-    line_rows3 = np.where(row_sums3==np.min(row_sums3))
-    
-    #group line rows together that represent single lines and identify the bottoms of the lines to orient OCR
-    line_groups2 = [tuple(group) for group in mit.consecutive_groups(line_rows3[0])]
-    line_bottoms2 = [np.max(group) for group in line_groups2]
-    print(line_bottoms2)
-    
-    doc_info_top_line = line_bottoms2[2]
-    vertical_standard_scaler2 = doc_info_top_line-line_bottoms2[0]
-    
-    #Identify vertical dark columns (form edges) and use them to create horizontal scaler for distance
-    dark_columns2 = [i for i,x in enumerate(zip(*page2)) if sum(x) < 2200] ### the first of these can become the anchor column
-    side_col_groups2 = [tuple(group) for group in mit.consecutive_groups(dark_columns2)]
-    side_cols2 = [np.max(group) for group in side_col_groups2]
-    left_form_line2, right_form_line2 = side_cols2[0], side_cols2[-1]
-    horizontal_standard_scaler2 = right_form_line2 - left_form_line2
-    
-    
-    #Pull document information
-    info_dict["Document Title"] = re.findall("\\n([a-zA-Z0-9\/_\-@. ]+)", pytesseract.image_to_string(page2[doc_info_top_line:doc_info_top_line+int(vertical_standard_scaler2*0.43655),left_form_line2:right_form_line2]))[0]
-    info_dict["Issuing Authority"] = re.findall("\\n([a-zA-Z0-9\/_\-@. ]+)", pytesseract.image_to_string(page2[doc_info_top_line+int(vertical_standard_scaler2*0.45685):doc_info_top_line+int(vertical_standard_scaler2*0.88325),left_form_line2:right_form_line2]))[0]
-    info_dict["Document Number"] = re.findall("\\n([a-zA-Z0-9\/_\-@. ]+)", pytesseract.image_to_string(page2[doc_info_top_line+int(vertical_standard_scaler2*0.90355):doc_info_top_line+int(vertical_standard_scaler2*1.35025),left_form_line2:right_form_line2]))[0]
-    info_dict["Expiration Date"] = re.findall("\\n([a-zA-Z0-9\/_\-@. ]+)", pytesseract.image_to_string(page2[doc_info_top_line+int(vertical_standard_scaler2*1.37056):doc_info_top_line+int(vertical_standard_scaler2*1.86802),left_form_line2:right_form_line2]))[0]
-    return info_dict
-    """
