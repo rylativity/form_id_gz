@@ -173,7 +173,7 @@ def process_I9_07_17_17(pages):
         else:   
             info_dict["work authorization"] = "No Box Checked"
     
-    info_dict["date signed"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*4.78151):address_top_line+int(vertical_standard_scaler*5.44538),middle_sect1_line+int(horizontal_standard_scaler*0.67652):middle_sect1_line+int(horizontal_standard_scaler*1.35675)])
+    #info_dict["date signed"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*4.78151):address_top_line+int(vertical_standard_scaler*5.44538),middle_sect1_line+int(horizontal_standard_scaler*0.67652):middle_sect1_line+int(horizontal_standard_scaler*1.35675)])
     
     info_dict["Preparer/Transl. Last Name"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*14.73810):address_top_line+int(vertical_standard_scaler*15.13492),left_side_col+int(horizontal_standard_scaler*0.00312):left_side_col+int(horizontal_standard_scaler*0.52296)])
     info_dict["Preparer/Transl. First Name"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*14.73810):address_top_line+int(vertical_standard_scaler*15.13492),left_side_col+int(horizontal_standard_scaler*0.52742):left_side_col+int(horizontal_standard_scaler*0.99911)])
@@ -233,17 +233,23 @@ def process_I9_07_17_17(pages):
     info_dict["Doc. Expir. (B)"] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*0.81842):doc_title_top_line+int(vertical_standard_scaler2*0.97632),left_side_col2+int(horizontal_standard_scaler2*0.33911):left_side_col+int(horizontal_standard_scaler2*0.66133)])
     info_dict["Doc. Expir. (C)"] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*0.81842):doc_title_top_line+int(vertical_standard_scaler2*0.97632),left_side_col2+int(horizontal_standard_scaler2*0.67556):left_side_col+int(horizontal_standard_scaler2*0.99822)])
     
-    """
-    info_dict["Employ. Start Date"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*13.94958):address_top_line+int(vertical_standard_scaler*14.41176),middle_sect1_line+int(horizontal_standard_scaler*-1.47505):middle_sect1_line+int(horizontal_standard_scaler*-0.96488)])
-    info_dict["Verifier Name"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*15.15126):address_top_line+int(vertical_standard_scaler*15.81513),middle_sect1_line+int(horizontal_standard_scaler*-0.38632):middle_sect1_line+int(horizontal_standard_scaler*1.03882)])
-    info_dict["Verifier Title"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*15.15126):address_top_line+int(vertical_standard_scaler*16.57143),middle_sect1_line+int(horizontal_standard_scaler*1.04806):middle_sect1_line+int(horizontal_standard_scaler*2.17745)])
-    info_dict["Business Name/Addr."] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*16.10084):address_top_line+int(vertical_standard_scaler*16.68067),middle_sect1_line+int(horizontal_standard_scaler*-1.96858):middle_sect1_line+int(horizontal_standard_scaler*1.03882)])
+    
+    info_dict["Employ. Start Date"] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*3.38947):doc_title_top_line+int(vertical_standard_scaler2*3.53947),left_side_col2+int(horizontal_standard_scaler2*0.45911):left_side_col+int(horizontal_standard_scaler2*0.60578)])
+    info_dict["Verifier Last Name"] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*4.01842):doc_title_top_line+int(vertical_standard_scaler2*4.17895),left_side_col2+int(horizontal_standard_scaler2*0.00133):left_side_col+int(horizontal_standard_scaler2*0.33822)])
+    info_dict["Verifier First Name"] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*4.01842):doc_title_top_line+int(vertical_standard_scaler2*4.17895),left_side_col2+int(horizontal_standard_scaler2*0.34133):left_side_col+int(horizontal_standard_scaler2*0.67467)])
+    info_dict["Verifier Title"] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*3.72632):doc_title_top_line+int(vertical_standard_scaler2*3.88684),left_side_col2+int(horizontal_standard_scaler2*0.63733):left_side_col+int(horizontal_standard_scaler2*0.99067)])
+    info_dict["Business Name"] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*4.01842):doc_title_top_line+int(vertical_standard_scaler2*4.17895),left_side_col2+int(horizontal_standard_scaler2*0.68089):left_side_col+int(horizontal_standard_scaler2*0.99600)])
+    info_dict["Business Street"] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*4.28684):doc_title_top_line+int(vertical_standard_scaler2*4.47368),left_side_col2+int(horizontal_standard_scaler2*0.00178):left_side_col+int(horizontal_standard_scaler2*0.50533)])
+    info_dict["Business City"] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*4.28684):doc_title_top_line+int(vertical_standard_scaler2*4.47368),left_side_col2+int(horizontal_standard_scaler2*0.50844):left_side_col+int(horizontal_standard_scaler2*0.75511)])
+    info_dict["Business State"] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*4.28684):doc_title_top_line+int(vertical_standard_scaler2*4.47368),left_side_col2+int(horizontal_standard_scaler2*0.75778):left_side_col+int(horizontal_standard_scaler2*0.82133)])
+    info_dict["Business Zip"] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*4.28684):doc_title_top_line+int(vertical_standard_scaler2*4.47368),left_side_col2+int(horizontal_standard_scaler2*0.82667):left_side_col+int(horizontal_standard_scaler2*0.97378)])
+    
     
     #Section 3
-    info_dict["Date Rehired"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*17.52941):address_top_line+int(vertical_standard_scaler*18.04202),middle_sect1_line+int(horizontal_standard_scaler*0.64325):middle_sect1_line+int(horizontal_standard_scaler*2.48614)])
-    info_dict["Reverif. Doc. Type"] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*18.45378):address_top_line+int(vertical_standard_scaler*19.00840),middle_sect1_line+int(horizontal_standard_scaler*0.27542):middle_sect1_line+int(horizontal_standard_scaler*0.94085)])
-    info_dict["Reverif. Doc. Num."] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*18.45378):address_top_line+int(vertical_standard_scaler*19.00840),middle_sect1_line+int(horizontal_standard_scaler*0.27542):middle_sect1_line+int(horizontal_standard_scaler*0.94085)])
-    info_dict["Reverif. Doc. Exp."] = pytesseract.image_to_string(page1[address_top_line+int(vertical_standard_scaler*18.45378):address_top_line+int(vertical_standard_scaler*19.00000),middle_sect1_line+int(horizontal_standard_scaler*1.63031):middle_sect1_line+int(horizontal_standard_scaler*2.19224)])
+    info_dict["Date Rehired"] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*4.93421):doc_title_top_line+int(vertical_standard_scaler2*5.10000),left_side_col2+int(horizontal_standard_scaler2*0.66889):left_side_col+int(horizontal_standard_scaler2*0.97378)])
+    info_dict["Reverif. Doc. Type"] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*5.50526):doc_title_top_line+int(vertical_standard_scaler2*5.67368),left_side_col2+int(horizontal_standard_scaler2*0.00222):left_side_col+int(horizontal_standard_scaler2*0.44622)])
+    info_dict["Reverif. Doc. Num."] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*5.50526):doc_title_top_line+int(vertical_standard_scaler2*5.67368),left_side_col2+int(horizontal_standard_scaler2*0.44978):left_side_col+int(horizontal_standard_scaler2*0.73644)])
+    info_dict["Reverif. Doc. Exp."] = pytesseract.image_to_string(page2[doc_title_top_line+int(vertical_standard_scaler2*5.50526):doc_title_top_line+int(vertical_standard_scaler2*5.67368),left_side_col2+int(horizontal_standard_scaler2*0.74000):left_side_col+int(horizontal_standard_scaler2*0.97378)])
     """
     return info_dict
 
